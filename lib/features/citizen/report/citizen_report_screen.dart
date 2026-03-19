@@ -8,6 +8,7 @@ import 'package:suwater_mobile/models/event.dart';
 import 'package:suwater_mobile/providers/events_provider.dart';
 import 'package:suwater_mobile/providers/upload_provider.dart';
 import 'package:suwater_mobile/core/widgets/address_search_field.dart';
+import 'package:suwater_mobile/core/widgets/location_picker_map.dart';
 import 'dart:io';
 
 class CitizenReportScreen extends ConsumerStatefulWidget {
@@ -374,7 +375,38 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                     },
                   ),
 
-                  // Location status
+                  const SizedBox(height: 16),
+
+                  // Map
+                  Row(
+                    children: [
+                      const Icon(Icons.map_outlined,
+                          size: 16, color: AppColors.textSecondary),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Pin Location',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  LocationPickerMap(
+                    latitude: _latitude,
+                    longitude: _longitude,
+                    height: 200,
+                    onLocationChanged: (latLng) {
+                      setState(() {
+                        _latitude = latLng.latitude;
+                        _longitude = latLng.longitude;
+                      });
+                    },
+                  ),
+
+                  // Coordinates badge
                   if (_latitude != null) ...[
                     const SizedBox(height: 8),
                     Container(
