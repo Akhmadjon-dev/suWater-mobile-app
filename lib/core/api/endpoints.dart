@@ -39,4 +39,11 @@ class Endpoints {
   // Geometry
   static const String geometry = '/geometry';
   static const String geometryBbox = '/geometry/bbox';
+
+  // Citizen Profile
+  static const String citizenProfile = '/citizen-profile';
+  static const String citizenProfileMeterPhoto = '/citizen-profile/meter-photo';
+  static const String citizenReadings = '/citizen-profile/readings';
+  static const String citizenReadingsLatest = '/citizen-profile/readings/latest';
+  static String citizenReading(String id) => '/citizen-profile/readings/$id';
 }

@@ -10,27 +10,37 @@ class AddressResult {
   final String shortName;
   final double lat;
   final double lon;
+  final String? state; // region/viloyat from Nominatim
+  final String? county; // district/tuman from Nominatim
+  final String? city;
 
   const AddressResult({
     required this.displayName,
     required this.shortName,
     required this.lat,
     required this.lon,
+    this.state,
+    this.county,
+    this.city,
   });
 
   factory AddressResult.fromNominatim(Map<String, dynamic> json) {
     final display = json['display_name'] as String;
-    // Short name: take first 2-3 parts before the city name
     final parts = display.split(', ');
     final short = parts.length > 2
         ? parts.take(3).join(', ')
         : display;
+
+    final address = json['address'] as Map<String, dynamic>? ?? {};
 
     return AddressResult(
       displayName: display,
       shortName: short,
       lat: double.parse(json['lat'] as String),
       lon: double.parse(json['lon'] as String),
+      state: address['state'] as String?,
+      county: address['county'] as String?,
+      city: address['city'] as String? ?? address['town'] as String?,
     );
   }
 }
