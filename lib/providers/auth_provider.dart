@@ -70,7 +70,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> register({
+  Future<bool> register({
     required String name,
     required String email,
     required String password,
@@ -85,6 +85,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         phone: phone,
       );
       state = AuthState(status: AuthStatus.authenticated, user: user);
+      return true;
     } catch (e) {
       String message = 'Registration failed';
       final errStr = e.toString();
@@ -93,11 +94,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else if (errStr.contains('400')) {
         message = 'Invalid registration data';
       }
-      print('Register error: $e');
       state = AuthState(
         status: AuthStatus.unauthenticated,
         error: message,
       );
+      return false;
     }
   }
 
