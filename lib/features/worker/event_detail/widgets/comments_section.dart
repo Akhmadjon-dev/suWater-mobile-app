@@ -236,6 +236,27 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
                                     ),
                                   ),
                                 ],
+                                if (c.stage != null) ...[
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
+                                    child: Text(
+                                      c.stage!.replaceAll('_', ' '),
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 const Spacer(),
                                 Text(
                                   _formatDate(c.createdAt),

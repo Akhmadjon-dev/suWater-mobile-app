@@ -10,6 +10,7 @@ import 'package:suwater_mobile/features/worker/event_detail/widgets/assignments_
 import 'package:suwater_mobile/features/worker/event_detail/widgets/comments_section.dart';
 import 'package:suwater_mobile/features/worker/event_detail/widgets/documents_section.dart';
 import 'package:suwater_mobile/features/worker/event_detail/widgets/transition_buttons.dart';
+import 'package:suwater_mobile/features/worker/event_detail/widgets/resources_section.dart';
 
 class WorkerEventDetailScreen extends ConsumerWidget {
   final String eventId;
@@ -47,6 +48,9 @@ class WorkerEventDetailScreen extends ConsumerWidget {
             ref.invalidate(eventAssignmentsProvider(eventId));
             ref.invalidate(eventCommentsProvider(eventId));
             ref.invalidate(eventDocumentsProvider(eventId));
+            ref.invalidate(eventLaborProvider(eventId));
+            ref.invalidate(eventEquipmentProvider(eventId));
+            ref.invalidate(eventMaterialsProvider(eventId));
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -126,12 +130,63 @@ class WorkerEventDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                       ],
 
+                      // Completion notes
+                      if (event.completionNotes != null) ...[
+                        _SectionTitle(title: 'Completion Notes'),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.success.withOpacity(0.3),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.check_circle, size: 18, color: AppColors.success),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  event.completionNotes!,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Created at timestamp
+                      _MetaRow(
+                        label: 'Created',
+                        value: _formatDate(event.createdAt),
+                      ),
+                      if (event.completedAt != null)
+                        _MetaRow(
+                          label: 'Completed',
+                          value: _formatDate(event.completedAt!),
+                        ),
+                      const SizedBox(height: 16),
+
                       // Transition buttons
                       TransitionButtons(event: event, eventId: eventId),
                       const SizedBox(height: 16),
 
                       // Documents
                       DocumentsSection(eventId: eventId),
+                      const SizedBox(height: 16),
+
+                      // Resources (Labor, Equipment, Materials)
+                      ResourcesSection(eventId: eventId),
                       const SizedBox(height: 16),
 
                       // Assignments
@@ -456,5 +511,59 @@ class _SectionTitle extends StatelessWidget {
         color: AppColors.textPrimary,
       ),
     );
+  }
+}
+
+class _MetaRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _MetaRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            label == 'Completed' ? Icons.check_circle_outline : Icons.access_time,
+            size: 14,
+            color: AppColors.textMuted,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatDate(String isoDate) {
+  try {
+    final dt = DateTime.parse(isoDate);
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+
+    return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}';
+  } catch (_) {
+    return isoDate;
   }
 }
