@@ -295,7 +295,7 @@ class _InfoCardsRow extends StatelessWidget {
           child: _InfoCard(
             label: 'SCHEDULED',
             child: Text(
-              event.scheduledDate ?? 'Not set',
+              _formatScheduledDate(event.scheduledDate),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 13,
@@ -549,6 +549,16 @@ class _MetaRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+String _formatScheduledDate(String? isoDate) {
+  if (isoDate == null) return 'Not set';
+  try {
+    final dt = DateTime.parse(isoDate).toLocal();
+    return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  } catch (_) {
+    return isoDate;
   }
 }
 

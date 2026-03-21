@@ -12,3 +12,7 @@ python3 -m http.server 8080 --bind 0.0.0.0
 
 
 lsof -ti:8080 | xargs kill -9
+
+
+open -a Simulator
+flutter run -d iPhone

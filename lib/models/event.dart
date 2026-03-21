@@ -1,3 +1,18 @@
+double? _toDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
+}
+
+int? _toInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
 enum EventStatus {
   reported('REPORTED'),
   createdAssigned('CREATED_ASSIGNED'),
@@ -224,7 +239,7 @@ class EventLabor {
       workDate: json['work_date'] as String?,
       startTime: json['start_time'] as String?,
       endTime: json['end_time'] as String?,
-      workedHours: (json['worked_hours'] as num?)?.toDouble(),
+      workedHours: _toDouble(json['worked_hours']),
       comments: json['comments'] as String?,
       createdAt: json['created_at'] as String,
     );
@@ -260,8 +275,8 @@ class EventEquipment {
       eventId: json['event_id'] as String,
       name: json['name'] as String,
       workDate: json['work_date'] as String?,
-      units: json['units'] as int?,
-      hoursUsed: (json['hours_used'] as num?)?.toDouble(),
+      units: _toInt(json['units']),
+      hoursUsed: _toDouble(json['hours_used']),
       description: json['description'] as String?,
       comments: json['comments'] as String?,
       createdAt: json['created_at'] as String,

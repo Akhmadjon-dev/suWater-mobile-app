@@ -208,12 +208,15 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
                           children: [
                             Row(
                               children: [
-                                Text(
-                                  c.userName ?? 'Unknown',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                    color: AppColors.textPrimary,
+                                Flexible(
+                                  child: Text(
+                                    c.userName ?? 'Unknown',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 if (c.userRole != null) ...[
@@ -236,8 +239,12 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
                                     ),
                                   ),
                                 ],
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
                                 if (c.stage != null) ...[
-                                  const SizedBox(width: 4),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 5,
@@ -256,8 +263,8 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
                                       ),
                                     ),
                                   ),
+                                  const SizedBox(width: 6),
                                 ],
-                                const Spacer(),
                                 Text(
                                   _formatDate(c.createdAt),
                                   style: const TextStyle(
