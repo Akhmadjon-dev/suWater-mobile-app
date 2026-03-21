@@ -98,4 +98,55 @@ class EventsRepository {
 
     return EventComment.fromJson(response.data as Map<String, dynamic>);
   }
+
+  // Labor
+  Future<List<EventLabor>> getLabor(String eventId) async {
+    final response = await _dio.get(Endpoints.labor(eventId));
+    return (response.data as List)
+        .map((e) => EventLabor.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<EventLabor> addLabor(String eventId, Map<String, dynamic> data) async {
+    final response = await _dio.post(Endpoints.labor(eventId), data: data);
+    return EventLabor.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteLabor(String eventId, String laborId) async {
+    await _dio.delete('${Endpoints.labor(eventId)}/$laborId');
+  }
+
+  // Equipment
+  Future<List<EventEquipment>> getEquipment(String eventId) async {
+    final response = await _dio.get(Endpoints.equipment(eventId));
+    return (response.data as List)
+        .map((e) => EventEquipment.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<EventEquipment> addEquipment(String eventId, Map<String, dynamic> data) async {
+    final response = await _dio.post(Endpoints.equipment(eventId), data: data);
+    return EventEquipment.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteEquipment(String eventId, String equipmentId) async {
+    await _dio.delete('${Endpoints.equipment(eventId)}/$equipmentId');
+  }
+
+  // Materials
+  Future<List<EventMaterial>> getMaterials(String eventId) async {
+    final response = await _dio.get(Endpoints.materials(eventId));
+    return (response.data as List)
+        .map((e) => EventMaterial.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<EventMaterial> addMaterial(String eventId, Map<String, dynamic> data) async {
+    final response = await _dio.post(Endpoints.materials(eventId), data: data);
+    return EventMaterial.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteMaterial(String eventId, String materialId) async {
+    await _dio.delete('${Endpoints.materials(eventId)}/$materialId');
+  }
 }

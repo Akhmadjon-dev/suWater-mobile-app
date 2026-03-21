@@ -184,6 +184,126 @@ class EventsResponse {
   }
 }
 
+class EventLabor {
+  final String id;
+  final String eventId;
+  final String? workerId;
+  final String? workerName;
+  final String? assignedWorkerName;
+  final String? hoursType;
+  final String? workDate;
+  final String? startTime;
+  final String? endTime;
+  final double? workedHours;
+  final String? comments;
+  final String createdAt;
+
+  const EventLabor({
+    required this.id,
+    required this.eventId,
+    this.workerId,
+    this.workerName,
+    this.assignedWorkerName,
+    this.hoursType,
+    this.workDate,
+    this.startTime,
+    this.endTime,
+    this.workedHours,
+    this.comments,
+    required this.createdAt,
+  });
+
+  factory EventLabor.fromJson(Map<String, dynamic> json) {
+    return EventLabor(
+      id: json['id'] as String,
+      eventId: json['event_id'] as String,
+      workerId: json['worker_id'] as String?,
+      workerName: json['worker_name'] as String?,
+      assignedWorkerName: json['assigned_worker_name'] as String?,
+      hoursType: json['hours_type'] as String?,
+      workDate: json['work_date'] as String?,
+      startTime: json['start_time'] as String?,
+      endTime: json['end_time'] as String?,
+      workedHours: (json['worked_hours'] as num?)?.toDouble(),
+      comments: json['comments'] as String?,
+      createdAt: json['created_at'] as String,
+    );
+  }
+}
+
+class EventEquipment {
+  final String id;
+  final String eventId;
+  final String name;
+  final String? workDate;
+  final int? units;
+  final double? hoursUsed;
+  final String? description;
+  final String? comments;
+  final String createdAt;
+
+  const EventEquipment({
+    required this.id,
+    required this.eventId,
+    required this.name,
+    this.workDate,
+    this.units,
+    this.hoursUsed,
+    this.description,
+    this.comments,
+    required this.createdAt,
+  });
+
+  factory EventEquipment.fromJson(Map<String, dynamic> json) {
+    return EventEquipment(
+      id: json['id'] as String,
+      eventId: json['event_id'] as String,
+      name: json['name'] as String,
+      workDate: json['work_date'] as String?,
+      units: json['units'] as int?,
+      hoursUsed: (json['hours_used'] as num?)?.toDouble(),
+      description: json['description'] as String?,
+      comments: json['comments'] as String?,
+      createdAt: json['created_at'] as String,
+    );
+  }
+}
+
+class EventMaterial {
+  final String id;
+  final String eventId;
+  final String name;
+  final String? workDate;
+  final String? unit;
+  final String? size;
+  final String? comments;
+  final String createdAt;
+
+  const EventMaterial({
+    required this.id,
+    required this.eventId,
+    required this.name,
+    this.workDate,
+    this.unit,
+    this.size,
+    this.comments,
+    required this.createdAt,
+  });
+
+  factory EventMaterial.fromJson(Map<String, dynamic> json) {
+    return EventMaterial(
+      id: json['id'] as String,
+      eventId: json['event_id'] as String,
+      name: json['name'] as String,
+      workDate: json['work_date'] as String?,
+      unit: json['unit'] as String?,
+      size: json['size'] as String?,
+      comments: json['comments'] as String?,
+      createdAt: json['created_at'] as String,
+    );
+  }
+}
+
 class EventAssignment {
   final String id;
   final String workerId;

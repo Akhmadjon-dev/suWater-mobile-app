@@ -219,3 +219,24 @@ final eventCommentsProvider =
   final repo = ref.read(eventsRepositoryProvider);
   return repo.getComments(eventId);
 });
+
+// Event labor
+final eventLaborProvider =
+    FutureProvider.family<List<EventLabor>, String>((ref, eventId) async {
+  final repo = ref.read(eventsRepositoryProvider);
+  return repo.getLabor(eventId);
+});
+
+// Event equipment
+final eventEquipmentProvider =
+    FutureProvider.family<List<EventEquipment>, String>((ref, eventId) async {
+  final repo = ref.read(eventsRepositoryProvider);
+  return repo.getEquipment(eventId);
+});
+
+// Event materials
+final eventMaterialsProvider =
+    FutureProvider.family<List<EventMaterial>, String>((ref, eventId) async {
+  final repo = ref.read(eventsRepositoryProvider);
+  return repo.getMaterials(eventId);
+});
