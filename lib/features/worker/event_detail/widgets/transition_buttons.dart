@@ -34,9 +34,10 @@ class _TransitionButtonsState extends ConsumerState<TransitionButtons> {
       ref.invalidate(eventDetailProvider(widget.eventId));
       ref.read(eventsProvider.notifier).refresh();
     } catch (e) {
+      debugPrint('TransitionButtons._doTransition failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Transition failed: $e')),
+          const SnackBar(content: Text('Failed to update event status')),
         );
       }
     } finally {

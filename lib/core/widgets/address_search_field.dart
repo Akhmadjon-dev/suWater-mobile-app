@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:suwater_mobile/core/theme/app_theme.dart';
@@ -156,7 +155,8 @@ class _AddressSearchFieldState extends State<AddressSearchField> {
           _isSearching = false;
         });
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('AddressSearchField._search failed: $e');
       if (mounted) {
         setState(() => _isSearching = false);
       }

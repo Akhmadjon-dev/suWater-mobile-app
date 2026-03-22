@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorage {
@@ -25,8 +25,10 @@ class SecureStorage {
     }
     try {
       return await _storage.read(key: key);
-    } catch (_) {
+    } catch (e) {
       if (kIsWeb) {
+        debugPrint('SecureStorage: web storage unavailable, using in-memory fallback. '
+            'Tokens will not persist across page reloads. Error: $e');
         _useWebFallback = true;
         return _webFallback[key];
       }
@@ -41,8 +43,10 @@ class SecureStorage {
     }
     try {
       await _storage.write(key: key, value: value);
-    } catch (_) {
+    } catch (e) {
       if (kIsWeb) {
+        debugPrint('SecureStorage: web storage write failed, using in-memory fallback. '
+            'Tokens will not persist across page reloads. Error: $e');
         _useWebFallback = true;
         _webFallback[key] = value;
         return;
@@ -94,7 +98,8 @@ class SecureStorage {
     }
     try {
       await _storage.deleteAll();
-    } catch (_) {
+    } catch (e) {
+      debugPrint('SecureStorage.clearAll failed: $e');
       if (kIsWeb) {
         _webFallback.clear();
       }

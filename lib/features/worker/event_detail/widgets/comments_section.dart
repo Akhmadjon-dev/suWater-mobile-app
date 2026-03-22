@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suwater_mobile/core/theme/app_theme.dart';
+import 'package:suwater_mobile/core/utils/date_formatter.dart';
 import 'package:suwater_mobile/providers/events_provider.dart';
-import 'package:intl/intl.dart';
 
 class CommentsSection extends ConsumerStatefulWidget {
   final String eventId;
@@ -34,7 +34,8 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
       await repo.addComment(widget.eventId, content);
       _commentController.clear();
       ref.invalidate(eventCommentsProvider(widget.eventId));
-    } catch (_) {
+    } catch (e) {
+      debugPrint('CommentsSection._sendComment failed: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to add comment')),
@@ -266,7 +267,7 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
                                   const SizedBox(width: 6),
                                 ],
                                 Text(
-                                  _formatDate(c.createdAt),
+                                  DateFormatter.compact(c.createdAt),
                                   style: const TextStyle(
                                     fontSize: 11,
                                     color: AppColors.textMuted,
@@ -297,12 +298,4 @@ class _CommentsSectionState extends ConsumerState<CommentsSection> {
     );
   }
 
-  String _formatDate(String iso) {
-    try {
-      final dt = DateTime.parse(iso);
-      return DateFormat('MMM d, HH:mm').format(dt);
-    } catch (_) {
-      return iso;
-    }
-  }
 }

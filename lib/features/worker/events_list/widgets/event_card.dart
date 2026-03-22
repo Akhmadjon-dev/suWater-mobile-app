@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suwater_mobile/core/theme/app_theme.dart';
 import 'package:suwater_mobile/core/theme/status_helpers.dart';
+import 'package:suwater_mobile/core/utils/date_formatter.dart';
 import 'package:suwater_mobile/models/event.dart';
-import 'package:intl/intl.dart';
 
 class EventCard extends StatelessWidget {
   final WaterEvent event;
@@ -44,7 +44,7 @@ class EventCard extends StatelessWidget {
                       PriorityDot(priority: event.priority),
                       const Spacer(),
                       Text(
-                        _formatDate(event.createdAt),
+                        DateFormatter.relative(event.createdAt),
                         style: const TextStyle(
                           fontSize: 12,
                           color: AppColors.textMuted,
@@ -151,18 +151,4 @@ class EventCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(String iso) {
-    try {
-      final dt = DateTime.parse(iso);
-      final now = DateTime.now();
-      final diff = now.difference(dt);
-
-      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-      if (diff.inHours < 24) return '${diff.inHours}h ago';
-      if (diff.inDays < 7) return '${diff.inDays}d ago';
-      return DateFormat('MMM d').format(dt);
-    } catch (_) {
-      return iso;
-    }
-  }
 }

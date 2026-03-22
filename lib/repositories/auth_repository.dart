@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:suwater_mobile/core/api/dio_client.dart';
 import 'package:suwater_mobile/core/api/endpoints.dart';
 import 'package:suwater_mobile/core/storage/secure_storage.dart';
@@ -47,7 +49,7 @@ class AuthRepository {
         'email': email,
         'password': password,
         'role': 'CITIZEN',
-        'org_id': 'c17ac9d4-f136-401a-a8bc-bffb2bf901c7',
+        'org_id': dotenv.env['ORG_ID'] ?? '',
         if (phone != null) 'phone': phone,
       },
     );
@@ -72,7 +74,8 @@ class AuthRepository {
     try {
       final response = await _dio.get(Endpoints.me);
       return User.fromJson(response.data as Map<String, dynamic>);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('AuthRepository.getCurrentUser failed: $e');
       return null;
     }
   }

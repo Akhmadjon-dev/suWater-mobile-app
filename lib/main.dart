@@ -5,7 +5,8 @@ import 'package:suwater_mobile/app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env.development');
+  const env = String.fromEnvironment('ENV', defaultValue: 'development');
+  await dotenv.load(fileName: '.env.$env');
 
   runApp(
     const ProviderScope(

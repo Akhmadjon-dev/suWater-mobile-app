@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suwater_mobile/models/user.dart';
 import 'package:suwater_mobile/repositories/auth_repository.dart';
@@ -60,12 +62,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final user = await _repo.login(email: email, password: password);
       state = AuthState(status: AuthStatus.authenticated, user: user);
     } catch (e) {
-      String message = 'Login failed';
-      if (e.toString().contains('Mobile access not enabled')) {
-        message = 'Mobile access not enabled for this account';
-      } else if (e.toString().contains('401')) {
-        message = 'Invalid email or password';
-      }
+      debugPrint('AuthNotifier.login failed: $e');
+      final message = _extractErrorMessage(e, fallback: 'Login failed');
       state = AuthState(status: AuthStatus.unauthenticated, error: message);
     }
   }
@@ -87,13 +85,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState(status: AuthStatus.authenticated, user: user);
       return true;
     } catch (e) {
-      String message = 'Registration failed';
-      final errStr = e.toString();
-      if (errStr.contains('409') || errStr.contains('already exists')) {
-        message = 'Email already registered';
-      } else if (errStr.contains('400')) {
-        message = 'Invalid registration data';
-      }
+      debugPrint('AuthNotifier.register failed: $e');
+      final message = _extractErrorMessage(e, fallback: 'Registration failed');
       state = AuthState(
         status: AuthStatus.unauthenticated,
         error: message,
@@ -105,6 +98,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await _repo.logout();
     state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  String _extractErrorMessage(Object e, {required String fallback}) {
+    if (e is DioException) {
+      final statusCode = e.response?.statusCode;
+      final data = e.response?.data;
+
+      // Try to extract server-provided message
+      if (data is Map<String, dynamic> && data['message'] is String) {
+        return data['message'] as String;
+      }
+
+      switch (statusCode) {
+        case 400:
+          return 'Invalid data provided';
+        case 401:
+          return 'Invalid email or password';
+        case 403:
+          return 'Mobile access not enabled for this account';
+        case 409:
+          return 'Email already registered';
+        default:
+          return fallback;
+      }
+    }
+    return fallback;
   }
 }
 

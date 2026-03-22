@@ -1,75 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:suwater_mobile/core/api/dio_client.dart';
 import 'package:suwater_mobile/core/api/endpoints.dart';
+import 'package:suwater_mobile/models/citizen_profile.dart';
+import 'package:suwater_mobile/models/water_reading.dart';
 
-class CitizenProfile {
-  final String id;
-  final String userId;
-  final String? fullName;
-  final String? homeNumber;
-  final String? meterNumber;
-  final String? abonentNumber;
-  final String? installedDate;
-  final String? meterPhotoUrl;
-  final String? region;
-  final String? district;
-  final String? address;
+export 'package:suwater_mobile/models/citizen_profile.dart';
+export 'package:suwater_mobile/models/water_reading.dart';
 
-  CitizenProfile({
-    required this.id,
-    required this.userId,
-    this.fullName,
-    this.homeNumber,
-    this.meterNumber,
-    this.abonentNumber,
-    this.installedDate,
-    this.meterPhotoUrl,
-    this.region,
-    this.district,
-    this.address,
-  });
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-  factory CitizenProfile.fromJson(Map<String, dynamic> json) {
-    return CitizenProfile(
-      id: json['id'],
-      userId: json['user_id'],
-      fullName: json['full_name'],
-      homeNumber: json['home_number'],
-      meterNumber: json['meter_number'],
-      abonentNumber: json['abonent_number'],
-      installedDate: json['installed_date'],
-      meterPhotoUrl: json['meter_photo_url'],
-      region: json['region'],
-      district: json['district'],
-      address: json['address'],
-    );
-  }
-}
-
-class WaterReading {
-  final String id;
-  final double readingValue;
-  final String readingDate;
-  final String? notes;
-  final String createdAt;
-
-  WaterReading({
-    required this.id,
-    required this.readingValue,
-    required this.readingDate,
-    this.notes,
-    required this.createdAt,
-  });
-
-  factory WaterReading.fromJson(Map<String, dynamic> json) {
-    return WaterReading(
-      id: json['id'],
-      readingValue: double.parse(json['reading_value'].toString()),
-      readingDate: json['reading_date'],
-      notes: json['notes'],
-      createdAt: json['created_at'],
-    );
-  }
-}
+final citizenRepositoryProvider = Provider<CitizenRepository>((ref) {
+  return CitizenRepository();
+});
 
 class CitizenRepository {
   final _dio = DioClient().dio;
@@ -77,41 +19,66 @@ class CitizenRepository {
   // ─── Profile ─────────────────────────────────────────────────────────────
 
   Future<CitizenProfile> getProfile() async {
-    final response = await _dio.get(Endpoints.citizenProfile);
-    return CitizenProfile.fromJson(response.data);
+    try {
+      final response = await _dio.get(Endpoints.citizenProfile);
+      return CitizenProfile.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('CitizenRepository.getProfile failed: $e');
+      rethrow;
+    }
   }
 
   Future<CitizenProfile> updateProfile(Map<String, dynamic> data) async {
-    final response = await _dio.put(Endpoints.citizenProfile, data: data);
-    return CitizenProfile.fromJson(response.data);
+    try {
+      final response = await _dio.put(Endpoints.citizenProfile, data: data);
+      return CitizenProfile.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('CitizenRepository.updateProfile failed: $e');
+      rethrow;
+    }
   }
 
   // ─── Water Readings ──────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>> getLatestReading() async {
-    final response = await _dio.get(Endpoints.citizenReadingsLatest);
-    final data = response.data;
-    if (data == null || data is String) {
-      return {'latest': null, 'total_consumption': 0.0};
+  Future<LatestReadingResponse> getLatestReading() async {
+    try {
+      final response = await _dio.get(Endpoints.citizenReadingsLatest);
+      final data = response.data;
+      if (data == null || data is String) {
+        return const LatestReadingResponse();
+      }
+      return LatestReadingResponse(
+        latest: data['latest'] != null
+            ? WaterReading.fromJson(data['latest'] as Map<String, dynamic>)
+            : null,
+        totalConsumption:
+            double.tryParse(data['total_consumption'].toString()) ?? 0.0,
+      );
+    } catch (e) {
+      debugPrint('CitizenRepository.getLatestReading failed: $e');
+      rethrow;
     }
-    return {
-      'latest': data['latest'] != null ? WaterReading.fromJson(data['latest']) : null,
-      'total_consumption': double.tryParse(data['total_consumption'].toString()) ?? 0.0,
-    };
   }
 
-  Future<Map<String, dynamic>> getReadings({int page = 1, int limit = 20}) async {
-    final response = await _dio.get(
-      Endpoints.citizenReadings,
-      queryParameters: {'page': page, 'limit': limit},
-    );
-    final data = response.data;
-    return {
-      'data': (data['data'] as List).map((e) => WaterReading.fromJson(e)).toList(),
-      'total': data['total'],
-      'page': data['page'],
-      'totalPages': data['totalPages'],
-    };
+  Future<ReadingsResponse> getReadings({int page = 1, int limit = 20}) async {
+    try {
+      final response = await _dio.get(
+        Endpoints.citizenReadings,
+        queryParameters: {'page': page, 'limit': limit},
+      );
+      final data = response.data as Map<String, dynamic>;
+      return ReadingsResponse(
+        data: (data['data'] as List)
+            .map((e) => WaterReading.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        total: data['total'] as int,
+        page: data['page'] as int,
+        totalPages: data['totalPages'] as int,
+      );
+    } catch (e) {
+      debugPrint('CitizenRepository.getReadings failed: $e');
+      rethrow;
+    }
   }
 
   Future<WaterReading> createReading({
@@ -119,18 +86,28 @@ class CitizenRepository {
     String? readingDate,
     String? notes,
   }) async {
-    final response = await _dio.post(
-      Endpoints.citizenReadings,
-      data: {
-        'reading_value': readingValue,
-        if (readingDate != null) 'reading_date': readingDate,
-        if (notes != null) 'notes': notes,
-      },
-    );
-    return WaterReading.fromJson(response.data);
+    try {
+      final response = await _dio.post(
+        Endpoints.citizenReadings,
+        data: {
+          'reading_value': readingValue,
+          if (readingDate != null) 'reading_date': readingDate,
+          if (notes != null) 'notes': notes,
+        },
+      );
+      return WaterReading.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('CitizenRepository.createReading failed: $e');
+      rethrow;
+    }
   }
 
   Future<void> deleteReading(String id) async {
-    await _dio.delete(Endpoints.citizenReading(id));
+    try {
+      await _dio.delete(Endpoints.citizenReading(id));
+    } catch (e) {
+      debugPrint('CitizenRepository.deleteReading failed: $e');
+      rethrow;
+    }
   }
 }

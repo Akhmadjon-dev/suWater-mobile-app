@@ -32,12 +32,12 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   final _picker = ImagePicker();
 
   static const _issueTypes = [
-    _IssueType('Pipe Burst', Icons.water_drop, EventType.pipeBurst, Color(0xFF4A90D9)),
-    _IssueType('Water Leak', Icons.opacity, EventType.leak, Color(0xFF6BA5E7)),
-    _IssueType('Contamination', Icons.warning_amber, EventType.contamination, Color(0xFFFF8C42)),
-    _IssueType('Valve Failure', Icons.build, EventType.valveFailure, Color(0xFF8B949E)),
-    _IssueType('Hydrant Damage', Icons.local_fire_department, EventType.hydrantDamage, Color(0xFFDA3633)),
-    _IssueType('Other', Icons.report_problem_outlined, EventType.other, Color(0xFF6E7681)),
+    _IssueType('Pipe Burst', Icons.water_drop, EventType.pipeBurst, AppColors.primary),
+    _IssueType('Water Leak', Icons.opacity, EventType.leak, AppColors.primaryLight),
+    _IssueType('Contamination', Icons.warning_amber, EventType.contamination, AppColors.statusReported),
+    _IssueType('Valve Failure', Icons.build, EventType.valveFailure, AppColors.textSecondary),
+    _IssueType('Hydrant Damage', Icons.local_fire_department, EventType.hydrantDamage, AppColors.error),
+    _IssueType('Other', Icons.report_problem_outlined, EventType.other, AppColors.textMuted),
   ];
 
   @override

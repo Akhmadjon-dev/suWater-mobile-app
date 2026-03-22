@@ -48,7 +48,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/worker/events/:id',
         builder: (context, state) {
-          final eventId = state.pathParameters['id']!;
+          final eventId = state.pathParameters['id'];
+          if (eventId == null || eventId.isEmpty) {
+            return const WorkerShell();
+          }
           return WorkerEventDetailScreen(eventId: eventId);
         },
       ),

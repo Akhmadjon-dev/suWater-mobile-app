@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:suwater_mobile/core/theme/app_theme.dart';
+import 'package:suwater_mobile/core/utils/date_formatter.dart';
 import 'package:suwater_mobile/providers/citizen_provider.dart';
 import 'package:suwater_mobile/repositories/citizen_repository.dart';
 
@@ -299,7 +299,7 @@ class _CurrentReadingDisplay extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           latest != null
-              ? 'Oxirgi: ${_formatDate(latest!.readingDate)}'
+              ? 'Oxirgi: ${DateFormatter.relativeUz(latest!.readingDate)}'
               : 'Hali ko\'rsatkich yo\'q',
           style: const TextStyle(
             fontSize: 14,
@@ -310,19 +310,6 @@ class _CurrentReadingDisplay extends StatelessWidget {
     );
   }
 
-  String _formatDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      final now = DateTime.now();
-      final diff = now.difference(date);
-      if (diff.inDays == 0) return 'Bugun';
-      if (diff.inDays == 1) return 'Kecha';
-      if (diff.inDays < 7) return '${diff.inDays} kun oldin';
-      return DateFormat('dd.MM.yyyy').format(date);
-    } catch (_) {
-      return dateStr;
-    }
-  }
 }
 
 // ─── Readings Tab ───────────────────────────────────────────────────────────
@@ -409,19 +396,7 @@ class _ReadingCard extends StatelessWidget {
   }
 
   String _formatRelative(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      final now = DateTime.now();
-      final diff = now.difference(date);
-      if (diff.inDays == 0) return 'Bugun';
-      if (diff.inDays == 1) return 'Kecha';
-      if (diff.inDays < 7) return '${diff.inDays} kun oldin';
-      if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} hafta oldin';
-      if (diff.inDays < 365) return '${(diff.inDays / 30).floor()} oy oldin';
-      return DateFormat('dd.MM.yyyy').format(date);
-    } catch (_) {
-      return dateStr;
-    }
+    return DateFormatter.relativeUz(dateStr);
   }
 }
 
@@ -461,7 +436,7 @@ class _ProfileTab extends StatelessWidget {
             _ProfileRow(
               label: 'O\'rnatilgan sana',
               value: profile?.installedDate != null
-                  ? _formatDate(profile!.installedDate!)
+                  ? DateFormatter.date(profile!.installedDate!)
                   : '-',
             ),
             _ProfileRow(label: 'Manzil', value: profile?.address ?? '-', isLast: true),
@@ -471,13 +446,6 @@ class _ProfileTab extends StatelessWidget {
     );
   }
 
-  String _formatDate(String dateStr) {
-    try {
-      return DateFormat('dd.MM.yyyy').format(DateTime.parse(dateStr));
-    } catch (_) {
-      return dateStr;
-    }
-  }
 }
 
 class _ProfileRow extends StatelessWidget {

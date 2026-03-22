@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 enum UserRole {
   admin('ADMIN'),
   supervisor('SUPERVISOR'),
@@ -11,7 +13,10 @@ enum UserRole {
   static UserRole fromString(String value) {
     return UserRole.values.firstWhere(
       (r) => r.value == value.toUpperCase(),
-      orElse: () => UserRole.citizen,
+      orElse: () {
+        debugPrint('WARNING: Unknown UserRole "$value", defaulting to citizen');
+        return UserRole.citizen;
+      },
     );
   }
 }

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:suwater_mobile/core/theme/app_theme.dart';
 import 'package:suwater_mobile/core/config/region.dart';
+import 'package:suwater_mobile/core/theme/app_theme.dart';
 
 class LocationPickerMap extends StatefulWidget {
   final double? latitude;
   final double? longitude;
   final ValueChanged<LatLng> onLocationChanged;
   final double height;
+  final RegionConfig? region;
 
   const LocationPickerMap({
     super.key,
@@ -16,6 +17,7 @@ class LocationPickerMap extends StatefulWidget {
     this.longitude,
     required this.onLocationChanged,
     this.height = 200,
+    this.region,
   });
 
   @override
@@ -57,7 +59,7 @@ class _LocationPickerMapState extends State<LocationPickerMap> {
 
   @override
   Widget build(BuildContext context) {
-    final region = activeRegion;
+    final region = widget.region ?? activeRegion;
     final center = _pinLocation ??
         LatLng(region.centerLat, region.centerLng);
     final zoom = _pinLocation != null ? 16.0 : region.zoom.toDouble();
@@ -84,6 +86,7 @@ class _LocationPickerMapState extends State<LocationPickerMap> {
                   urlTemplate:
                       'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'uz.waterflow.suwater_mobile',
+                  evictErrorTileStrategy: EvictErrorTileStrategy.notVisibleRespectMargin,
                 ),
                 if (_pinLocation != null)
                   MarkerLayer(

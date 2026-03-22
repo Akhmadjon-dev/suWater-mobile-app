@@ -156,37 +156,37 @@ class EventsNotifier extends StateNotifier<EventsListState> {
     await loadEvents(page: 1);
   }
 
-  void setStatusFilter(EventStatus? status) {
+  Future<void> setStatusFilter(EventStatus? status) {
     state = state.copyWith(
       filterStatus: status,
       clearFilterStatus: status == null,
     );
-    loadEvents(page: 1);
+    return loadEvents(page: 1);
   }
 
-  void setTypeFilter(EventType? type) {
+  Future<void> setTypeFilter(EventType? type) {
     state = state.copyWith(
       filterType: type,
       clearFilterType: type == null,
     );
-    loadEvents(page: 1);
+    return loadEvents(page: 1);
   }
 
-  void setPriorityFilter(EventPriority? priority) {
+  Future<void> setPriorityFilter(EventPriority? priority) {
     state = state.copyWith(
       filterPriority: priority,
       clearFilterPriority: priority == null,
     );
-    loadEvents(page: 1);
+    return loadEvents(page: 1);
   }
 
-  void clearFilters() {
+  Future<void> clearFilters() {
     state = state.copyWith(
       clearFilterStatus: true,
       clearFilterType: true,
       clearFilterPriority: true,
     );
-    loadEvents(page: 1);
+    return loadEvents(page: 1);
   }
 
   void toggleFilters() {

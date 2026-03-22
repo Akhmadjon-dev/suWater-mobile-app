@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:suwater_mobile/core/api/dio_client.dart';
 import 'package:suwater_mobile/core/api/endpoints.dart';
 import 'package:suwater_mobile/models/event.dart';
@@ -13,23 +14,32 @@ class EventsRepository {
     String? type,
     String? priority,
   }) async {
-    final response = await _dio.get(
-      Endpoints.events,
-      queryParameters: {
-        'page': page,
-        'limit': limit,
-        if (status != null) 'status': status,
-        if (type != null) 'type': type,
-        if (priority != null) 'priority': priority,
-      },
-    );
-
-    return EventsResponse.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final response = await _dio.get(
+        Endpoints.events,
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+          if (status != null) 'status': status,
+          if (type != null) 'type': type,
+          if (priority != null) 'priority': priority,
+        },
+      );
+      return EventsResponse.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('EventsRepository.getEvents failed: $e');
+      rethrow;
+    }
   }
 
   Future<WaterEvent> getEvent(String id) async {
-    final response = await _dio.get(Endpoints.event(id));
-    return WaterEvent.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final response = await _dio.get(Endpoints.event(id));
+      return WaterEvent.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('EventsRepository.getEvent($id) failed: $e');
+      rethrow;
+    }
   }
 
   Future<WaterEvent> createEvent({
@@ -41,20 +51,24 @@ class EventsRepository {
     String? address,
     String priority = 'MEDIUM',
   }) async {
-    final response = await _dio.post(
-      Endpoints.events,
-      data: {
-        'type': type,
-        'title': title,
-        if (description != null) 'description': description,
-        'latitude': latitude ?? 0,
-        'longitude': longitude ?? 0,
-        if (address != null) 'address': address,
-        'priority': priority,
-      },
-    );
-
-    return WaterEvent.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final response = await _dio.post(
+        Endpoints.events,
+        data: {
+          'type': type,
+          'title': title,
+          if (description != null) 'description': description,
+          'latitude': latitude ?? 0,
+          'longitude': longitude ?? 0,
+          if (address != null) 'address': address,
+          'priority': priority,
+        },
+      );
+      return WaterEvent.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('EventsRepository.createEvent failed: $e');
+      rethrow;
+    }
   }
 
   Future<void> transitionEvent(
@@ -63,90 +77,105 @@ class EventsRepository {
     String? cancellationReason,
     String? completionNotes,
   }) async {
-    await _dio.patch(
-      Endpoints.eventTransition(id),
-      data: {
-        'status': status,
-        if (cancellationReason != null)
-          'cancellation_reason': cancellationReason,
-        if (completionNotes != null) 'completion_notes': completionNotes,
-      },
-    );
+    try {
+      await _dio.patch(
+        Endpoints.eventTransition(id),
+        data: {
+          'status': status,
+          if (cancellationReason != null)
+            'cancellation_reason': cancellationReason,
+          if (completionNotes != null) 'completion_notes': completionNotes,
+        },
+      );
+    } catch (e) {
+      debugPrint('EventsRepository.transitionEvent($id) failed: $e');
+      rethrow;
+    }
   }
 
-  // Assignments
-  Future<List<EventAssignment>> getAssignments(String eventId) async {
-    final response = await _dio.get(Endpoints.assignments(eventId));
-    return (response.data as List)
-        .map((e) => EventAssignment.fromJson(e as Map<String, dynamic>))
-        .toList();
+  // ─── Generic list/item helpers ──────────────────────────────────────────────
+
+  Future<List<T>> _fetchList<T>(
+    String endpoint,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final response = await _dio.get(endpoint);
+      return (response.data as List)
+          .map((e) => fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('EventsRepository._fetchList($endpoint) failed: $e');
+      rethrow;
+    }
   }
 
-  // Comments
-  Future<List<EventComment>> getComments(String eventId) async {
-    final response = await _dio.get(Endpoints.comments(eventId));
-    return (response.data as List)
-        .map((e) => EventComment.fromJson(e as Map<String, dynamic>))
-        .toList();
+  Future<T> _postItem<T>(
+    String endpoint,
+    Map<String, dynamic> data,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final response = await _dio.post(endpoint, data: data);
+      return fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      debugPrint('EventsRepository._postItem($endpoint) failed: $e');
+      rethrow;
+    }
   }
 
-  Future<EventComment> addComment(String eventId, String content) async {
-    final response = await _dio.post(
-      Endpoints.comments(eventId),
-      data: {'content': content},
-    );
-
-    return EventComment.fromJson(response.data as Map<String, dynamic>);
+  Future<void> _deleteItem(String endpoint) async {
+    try {
+      await _dio.delete(endpoint);
+    } catch (e) {
+      debugPrint('EventsRepository._deleteItem($endpoint) failed: $e');
+      rethrow;
+    }
   }
 
-  // Labor
-  Future<List<EventLabor>> getLabor(String eventId) async {
-    final response = await _dio.get(Endpoints.labor(eventId));
-    return (response.data as List)
-        .map((e) => EventLabor.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
+  // ─── Assignments ────────────────────────────────────────────────────────────
 
-  Future<EventLabor> addLabor(String eventId, Map<String, dynamic> data) async {
-    final response = await _dio.post(Endpoints.labor(eventId), data: data);
-    return EventLabor.fromJson(response.data as Map<String, dynamic>);
-  }
+  Future<List<EventAssignment>> getAssignments(String eventId) =>
+      _fetchList(Endpoints.assignments(eventId), EventAssignment.fromJson);
 
-  Future<void> deleteLabor(String eventId, String laborId) async {
-    await _dio.delete('${Endpoints.labor(eventId)}/$laborId');
-  }
+  // ─── Comments ───────────────────────────────────────────────────────────────
 
-  // Equipment
-  Future<List<EventEquipment>> getEquipment(String eventId) async {
-    final response = await _dio.get(Endpoints.equipment(eventId));
-    return (response.data as List)
-        .map((e) => EventEquipment.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
+  Future<List<EventComment>> getComments(String eventId) =>
+      _fetchList(Endpoints.comments(eventId), EventComment.fromJson);
 
-  Future<EventEquipment> addEquipment(String eventId, Map<String, dynamic> data) async {
-    final response = await _dio.post(Endpoints.equipment(eventId), data: data);
-    return EventEquipment.fromJson(response.data as Map<String, dynamic>);
-  }
+  Future<EventComment> addComment(String eventId, String content) =>
+      _postItem(Endpoints.comments(eventId), {'content': content}, EventComment.fromJson);
 
-  Future<void> deleteEquipment(String eventId, String equipmentId) async {
-    await _dio.delete('${Endpoints.equipment(eventId)}/$equipmentId');
-  }
+  // ─── Labor ──────────────────────────────────────────────────────────────────
 
-  // Materials
-  Future<List<EventMaterial>> getMaterials(String eventId) async {
-    final response = await _dio.get(Endpoints.materials(eventId));
-    return (response.data as List)
-        .map((e) => EventMaterial.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
+  Future<List<EventLabor>> getLabor(String eventId) =>
+      _fetchList(Endpoints.labor(eventId), EventLabor.fromJson);
 
-  Future<EventMaterial> addMaterial(String eventId, Map<String, dynamic> data) async {
-    final response = await _dio.post(Endpoints.materials(eventId), data: data);
-    return EventMaterial.fromJson(response.data as Map<String, dynamic>);
-  }
+  Future<EventLabor> addLabor(String eventId, Map<String, dynamic> data) =>
+      _postItem(Endpoints.labor(eventId), data, EventLabor.fromJson);
 
-  Future<void> deleteMaterial(String eventId, String materialId) async {
-    await _dio.delete('${Endpoints.materials(eventId)}/$materialId');
-  }
+  Future<void> deleteLabor(String eventId, String laborId) =>
+      _deleteItem(Endpoints.laborById(eventId, laborId));
+
+  // ─── Equipment ──────────────────────────────────────────────────────────────
+
+  Future<List<EventEquipment>> getEquipment(String eventId) =>
+      _fetchList(Endpoints.equipment(eventId), EventEquipment.fromJson);
+
+  Future<EventEquipment> addEquipment(String eventId, Map<String, dynamic> data) =>
+      _postItem(Endpoints.equipment(eventId), data, EventEquipment.fromJson);
+
+  Future<void> deleteEquipment(String eventId, String equipmentId) =>
+      _deleteItem(Endpoints.equipmentById(eventId, equipmentId));
+
+  // ─── Materials ──────────────────────────────────────────────────────────────
+
+  Future<List<EventMaterial>> getMaterials(String eventId) =>
+      _fetchList(Endpoints.materials(eventId), EventMaterial.fromJson);
+
+  Future<EventMaterial> addMaterial(String eventId, Map<String, dynamic> data) =>
+      _postItem(Endpoints.materials(eventId), data, EventMaterial.fromJson);
+
+  Future<void> deleteMaterial(String eventId, String materialId) =>
+      _deleteItem(Endpoints.materialById(eventId, materialId));
 }

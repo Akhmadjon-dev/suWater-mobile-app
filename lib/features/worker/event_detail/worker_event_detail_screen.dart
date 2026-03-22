@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:suwater_mobile/core/theme/app_theme.dart';
 import 'package:suwater_mobile/core/theme/status_helpers.dart';
+import 'package:suwater_mobile/core/utils/date_formatter.dart';
 import 'package:suwater_mobile/models/event.dart';
 import 'package:suwater_mobile/providers/events_provider.dart';
 import 'package:suwater_mobile/providers/upload_provider.dart';
@@ -168,12 +169,12 @@ class WorkerEventDetailScreen extends ConsumerWidget {
                       // Created at timestamp
                       _MetaRow(
                         label: 'Created',
-                        value: _formatDate(event.createdAt),
+                        value: DateFormatter.relative(event.createdAt),
                       ),
                       if (event.completedAt != null)
                         _MetaRow(
                           label: 'Completed',
-                          value: _formatDate(event.completedAt!),
+                          value: DateFormatter.relative(event.completedAt!),
                         ),
                       const SizedBox(height: 16),
 
@@ -295,7 +296,7 @@ class _InfoCardsRow extends StatelessWidget {
           child: _InfoCard(
             label: 'SCHEDULED',
             child: Text(
-              _formatScheduledDate(event.scheduledDate),
+              DateFormatter.scheduled(event.scheduledDate),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 13,
@@ -549,31 +550,5 @@ class _MetaRow extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-String _formatScheduledDate(String? isoDate) {
-  if (isoDate == null) return 'Not set';
-  try {
-    final dt = DateTime.parse(isoDate).toLocal();
-    return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-  } catch (_) {
-    return isoDate;
-  }
-}
-
-String _formatDate(String isoDate) {
-  try {
-    final dt = DateTime.parse(isoDate);
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-
-    return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year}';
-  } catch (_) {
-    return isoDate;
   }
 }

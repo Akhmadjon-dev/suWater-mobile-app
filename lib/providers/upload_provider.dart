@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suwater_mobile/models/document.dart';
 import 'package:suwater_mobile/repositories/documents_repository.dart';
@@ -35,10 +36,11 @@ class UploadNotifier extends StateNotifier<UploadState> {
         fileName: fileName,
         eventId: eventId,
       );
-      state = UploadState(lastUploaded: doc);
+      state = UploadState(isUploading: false, lastUploaded: doc);
       return doc;
     } catch (e) {
-      state = UploadState(error: 'Upload failed: $e');
+      debugPrint('UploadNotifier.upload failed: $e');
+      state = const UploadState(error: 'Upload failed');
       return null;
     }
   }

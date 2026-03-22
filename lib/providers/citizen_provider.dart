@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suwater_mobile/repositories/citizen_repository.dart';
 
@@ -44,11 +45,16 @@ class CitizenProfileNotifier extends StateNotifier<CitizenProfileState> {
   }
 
   Future<bool> updateProfile(Map<String, dynamic> data) async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
       final profile = await _repo.updateProfile(data);
+      if (!mounted) return true;
       state = CitizenProfileState(profile: profile);
       return true;
     } catch (e) {
+      debugPrint('CitizenProfileNotifier.updateProfile failed: $e');
+      if (!mounted) return false;
+      state = state.copyWith(isLoading: false, error: 'Failed to update profile');
       return false;
     }
   }
@@ -56,7 +62,7 @@ class CitizenProfileNotifier extends StateNotifier<CitizenProfileState> {
 
 final citizenProfileProvider =
     StateNotifierProvider<CitizenProfileNotifier, CitizenProfileState>((ref) {
-  return CitizenProfileNotifier(CitizenRepository());
+  return CitizenProfileNotifier(ref.read(citizenRepositoryProvider));
 });
 
 // ─── Readings State ─────────────────────────────────────────────────────────
@@ -81,6 +87,28 @@ class ReadingsState {
     this.isLoading = false,
     this.error,
   });
+
+  ReadingsState copyWith({
+    List<WaterReading>? readings,
+    WaterReading? latest,
+    double? totalConsumption,
+    int? page,
+    int? totalPages,
+    int? total,
+    bool? isLoading,
+    String? error,
+  }) {
+    return ReadingsState(
+      readings: readings ?? this.readings,
+      latest: latest ?? this.latest,
+      totalConsumption: totalConsumption ?? this.totalConsumption,
+      page: page ?? this.page,
+      totalPages: totalPages ?? this.totalPages,
+      total: total ?? this.total,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+    );
+  }
 }
 
 class ReadingsNotifier extends StateNotifier<ReadingsState> {
@@ -92,22 +120,22 @@ class ReadingsNotifier extends StateNotifier<ReadingsState> {
 
   Future<void> loadAll() async {
     if (!mounted) return;
-    state = ReadingsState(isLoading: true);
+    state = state.copyWith(isLoading: true, error: null);
     try {
       final latestResult = await _repo.getLatestReading();
       final result = await _repo.getReadings(page: 1);
       if (!mounted) return;
       state = ReadingsState(
-        latest: latestResult['latest'] as WaterReading?,
-        totalConsumption: latestResult['total_consumption'] as double,
-        readings: result['data'] as List<WaterReading>,
-        page: result['page'] as int,
-        totalPages: result['totalPages'] as int,
-        total: result['total'] as int,
+        latest: latestResult.latest,
+        totalConsumption: latestResult.totalConsumption,
+        readings: result.data,
+        page: result.page,
+        totalPages: result.totalPages,
+        total: result.total,
       );
     } catch (e) {
       if (!mounted) return;
-      state = ReadingsState(error: 'Failed to load readings');
+      state = state.copyWith(isLoading: false, error: 'Failed to load readings');
     }
   }
 
@@ -116,14 +144,16 @@ class ReadingsNotifier extends StateNotifier<ReadingsState> {
     final nextPage = state.page + 1;
     try {
       final result = await _repo.getReadings(page: nextPage);
-      state = ReadingsState(
-        latest: state.latest,
-        readings: [...state.readings, ...result['data'] as List<WaterReading>],
-        page: result['page'] as int,
-        totalPages: result['totalPages'] as int,
-        total: result['total'] as int,
+      if (!mounted) return;
+      state = state.copyWith(
+        readings: [...state.readings, ...result.data],
+        page: result.page,
+        totalPages: result.totalPages,
+        total: result.total,
       );
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('ReadingsNotifier.loadMore failed: $e');
+    }
   }
 
   Future<bool> addReading(double value, {String? notes}) async {
@@ -140,11 +170,13 @@ class ReadingsNotifier extends StateNotifier<ReadingsState> {
     try {
       await _repo.deleteReading(id);
       await loadAll();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('ReadingsNotifier.deleteReading failed: $e');
+    }
   }
 }
 
 final readingsProvider =
     StateNotifierProvider<ReadingsNotifier, ReadingsState>((ref) {
-  return ReadingsNotifier(CitizenRepository());
+  return ReadingsNotifier(ref.read(citizenRepositoryProvider));
 });

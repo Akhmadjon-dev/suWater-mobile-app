@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 double? _toDouble(dynamic value) {
   if (value == null) return null;
   if (value is num) return value.toDouble();
@@ -27,7 +29,10 @@ enum EventStatus {
   static EventStatus fromString(String value) {
     return EventStatus.values.firstWhere(
       (s) => s.value == value.toUpperCase(),
-      orElse: () => EventStatus.reported,
+      orElse: () {
+        debugPrint('WARNING: Unknown EventStatus "$value", defaulting to reported');
+        return EventStatus.reported;
+      },
     );
   }
 
@@ -63,7 +68,10 @@ enum EventType {
   static EventType fromString(String value) {
     return EventType.values.firstWhere(
       (t) => t.value == value.toUpperCase(),
-      orElse: () => EventType.other,
+      orElse: () {
+        debugPrint('WARNING: Unknown EventType "$value", defaulting to other');
+        return EventType.other;
+      },
     );
   }
 
@@ -97,7 +105,10 @@ enum EventPriority {
   static EventPriority fromString(String value) {
     return EventPriority.values.firstWhere(
       (p) => p.value == value.toUpperCase(),
-      orElse: () => EventPriority.medium,
+      orElse: () {
+        debugPrint('WARNING: Unknown EventPriority "$value", defaulting to medium');
+        return EventPriority.medium;
+      },
     );
   }
 

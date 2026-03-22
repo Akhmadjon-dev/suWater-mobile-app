@@ -26,8 +26,14 @@ class Endpoints {
 
   // Event resources
   static String labor(String eventId) => '/events/$eventId/labor';
+  static String laborById(String eventId, String laborId) =>
+      '/events/$eventId/labor/$laborId';
   static String equipment(String eventId) => '/events/$eventId/equipment';
+  static String equipmentById(String eventId, String equipmentId) =>
+      '/events/$eventId/equipment/$equipmentId';
   static String materials(String eventId) => '/events/$eventId/materials';
+  static String materialById(String eventId, String materialId) =>
+      '/events/$eventId/materials/$materialId';
 
   // Documents
   static const String documentsUpload = '/documents/upload';
